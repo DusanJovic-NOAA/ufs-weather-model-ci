@@ -28,7 +28,7 @@ CCPP_SUITES="${CCPP_SUITES:-FV3_GFS_2017_gfdlmp}"
     --config=FV3/ccpp/config/ccpp_prebuild_config.py \
     --static \
     --suites=${CCPP_SUITES} \
-    --builddir=${BUILD_DIR}/FV3 > ${BUILD_DIR}/ccpp_prebuild.log 2>&1
+    --builddir=${BUILD_DIR}/FV3
 
 source ${BUILD_DIR}/FV3/ccpp/physics/CCPP_SCHEMES.sh
 source ${BUILD_DIR}/FV3/ccpp/physics/CCPP_CAPS.sh

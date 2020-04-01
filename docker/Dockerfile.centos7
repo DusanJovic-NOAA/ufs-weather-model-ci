@@ -1,0 +1,48 @@
+FROM dusanjovicnoaa/ufs-ci-docker
+
+LABEL maintainer="dusan.jovic@noaa.gov"
+
+ENV HOME /home/builder
+
+USER root
+COPY . $HOME/ufs-weather-model
+RUN chown -R builder:builder $HOME/ufs-weather-model
+USER builder
+
+ENV COMPILER gnu
+
+ENV CMAKE_Platform linux.${COMPILER}
+ENV CMAKE_C_COMPILER mpicc
+ENV CMAKE_CXX_COMPILER mpicxx
+ENV CMAKE_Fortran_COMPILER mpif90
+
+ENV HDF5 ${HOME}/ufs-ci-docker/libs/3rdparty/local
+ENV NETCDF ${HOME}/ufs-ci-docker/libs/3rdparty/local
+ENV ESMFMKFILE ${HOME}/ufs-ci-docker/libs/3rdparty/local/lib/esmf.mk
+
+ENV NCEPLIBS_DIR ${HOME}/ufs-ci-docker/libs/nceplibs/local
+
+ENV BACIO_LIB4 ${NCEPLIBS_DIR}/bacio_2.2.0/lib/libbacio_v2.2.0_4.a
+ENV NEMSIO_INC ${NCEPLIBS_DIR}/nemsio_2.3.0/include
+ENV NEMSIO_LIB ${NCEPLIBS_DIR}/nemsio_2.3.0/lib/libnemsio_v2.3.0.a
+ENV SP_LIBd ${NCEPLIBS_DIR}/sp_2.1.0/lib/libsp_v2.1.0_d.a
+ENV W3EMC_LIBd ${NCEPLIBS_DIR}/w3emc_2.5.0/lib/libw3emc_v2.5.0_d.a
+ENV W3NCO_LIBd ${NCEPLIBS_DIR}/w3nco_2.1.0/lib/libw3nco_v2.1.0_d.a
+
+ENV CCPP_SUITES "FV3_GFS_v15p2"
+ENV CMAKE_FLAGS "-D32BIT=ON -DDYN32=ON"
+
+ENV OMP_NUM_THREADS 1
+
+RUN . /etc/bashrc && \
+    . $HOME/.bashrc && \
+    cd $HOME/ufs-weather-model && \
+    ./build.sh
+
+RUN . /etc/bashrc && \
+    . $HOME/.bashrc && \
+    cd $HOME/simple-test-case && \
+    sed -i -e '/nhours_fcst:/s/24/3/g' model_configure && \
+    mpiexec -np 8 $HOME/ufs-weather-model/ufs_weather_model
+
+CMD ["/bin/bash"]
